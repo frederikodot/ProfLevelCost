@@ -1,0 +1,14 @@
+## Interface: 20504
+## Title: ProfLevelCost
+## Notes: UI-based profession leveling cost calculator + optimizer (TBC)
+## Author: Frederiko
+## SavedVariables: ProfLevelCostDB
+
+ProfLevelCost_Init.lua
+ProfLevelCost_Core.lua
+ProfLevelCost_UI.lua
+ProfLevelCost_Events.lua
+BS_Pools.lua
+JC_Pools.lua
+LW_Pools.lua
+EN_Pools.lua
