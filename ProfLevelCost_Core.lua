@@ -618,7 +618,7 @@ end
 local function applyModeToChance(p, mode)
   -- p is the base probability from the linear formula.
   -- Best: luckier (scaled up), Expected: base, Worst: scaled down.
-  if p < 0 then 
+  if p < 1.0 then 
     if mode == "min" then
       local pb = p * 1.25
       if pb > 1.0 then pb = 1.0 end
