@@ -1,0 +1,7 @@
+## Interface: 20504
+## Title: ProfLevelCost - Data (LW)
+## Notes: Recipe pools for LW (LoadOnDemand)
+## RequiredDeps: ProfLevelCost
+## LoadOnDemand: 1
+
+LW_Pools.lua

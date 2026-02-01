@@ -16,7 +16,8 @@ local safeItemName   = PLC.SafeItemName
 local function OnPricesUpdated()
   if PLC.UI and PLC.UI.frame and PLC.UI.frame:IsShown() then
     PLC.UI_UpdateStatus()
-    PLC.UI_Recalculate()
+    if PLC.UI_MarkDirty then PLC.UI_MarkDirty() end
+    if PLC.UI_Render then PLC.UI_Render() end
   end
 end
 
@@ -39,7 +40,9 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1)
     end
   elseif event == "ITEM_DATA_LOAD_RESULT" then
     if PLC.UI and PLC.UI.frame and PLC.UI.frame:IsShown() then
-      PLC.UI_Recalculate()
+      -- Item names/icons loaded; do not recompute. Just mark output potentially stale.
+      if PLC.UI_MarkDirty then PLC.UI_MarkDirty() end
+      if PLC.UI_Render then PLC.UI_Render() end
     end
   end
 end)
@@ -79,7 +82,10 @@ SlashCmdList["PROFLEVELCOST"] = function(msg)
     ProfLevelCostDB.prices[id] = moneyToCopper(g, s, c)
     print(string.format("|cffffd200ProfLevelCost|r: Fallback set %s (%d) = %s",
       safeItemName(id), id, copperToString(ProfLevelCostDB.prices[id])))
-    if PLC.UI and PLC.UI.frame and PLC.UI.frame:IsShown() then PLC.UI_Recalculate() end
+    if PLC.UI and PLC.UI.frame and PLC.UI.frame:IsShown() then
+      if PLC.UI_MarkDirty then PLC.UI_MarkDirty() end
+      if PLC.UI_Render then PLC.UI_Render() end
+    end
     return
   end
 
@@ -91,7 +97,10 @@ SlashCmdList["PROFLEVELCOST"] = function(msg)
     end
     ProfLevelCostDB.prices[id] = nil
     print(string.format("|cffffd200ProfLevelCost|r: Cleared fallback price for %d", id))
-    if PLC.UI and PLC.UI.frame and PLC.UI.frame:IsShown() then PLC.UI_Recalculate() end
+    if PLC.UI and PLC.UI.frame and PLC.UI.frame:IsShown() then
+      if PLC.UI_MarkDirty then PLC.UI_MarkDirty() end
+      if PLC.UI_Render then PLC.UI_Render() end
+    end
     return
   end
 

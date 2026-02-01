@@ -1,0 +1,7 @@
+## Interface: 20504
+## Title: ProfLevelCost - Data (JC)
+## Notes: Recipe pools for JC (LoadOnDemand)
+## RequiredDeps: ProfLevelCost
+## LoadOnDemand: 1
+
+JC_Pools.lua

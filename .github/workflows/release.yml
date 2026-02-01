@@ -14,15 +14,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install zip
-        run: sudo apt-get update && sudo apt-get install -y zip
+      - name: Install zip (and unzip for verification)
+        run: sudo apt-get update && sudo apt-get install -y zip unzip
 
-      - name: Build zip (stable name)
+      - name: Build zip (stable name, CurseForge/WowUp-friendly)
+        shell: bash
         run: |
+          set -euo pipefail
+
           make clean
-          make zip NAME_PREFIX=ProfLevelCost ZIP_NAME="ProfLevelCost_${GITHUB_REF_NAME}.zip"
-          ls -lah *.zip
+
+          ZIP_BASENAME="ProfLevelCost_${GITHUB_REF_NAME}.zip"
+          ZIP_PATH="dist/${ZIP_BASENAME}"
+
+          # Ensure the zip is created with top-level addon folders at the root of the archive.
+          make zip NAME_PREFIX=ProfLevelCost ZIP_NAME="${ZIP_PATH}"
+
+          echo "Built:"
+          ls -lah "${ZIP_PATH}"
+
+          echo ""
+          echo "ZIP top-level folders (must be addon folders, not a wrapper dir):"
+          unzip -Z1 "${ZIP_PATH}" | awk -F/ 'NF>1{print $1}' | sort -u | sed 's/^/  - /'
 
       - name: Create GitHub Release + upload asset
         uses: softprops/action-gh-release@v2
@@ -31,4 +47,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
-            ProfLevelCost_${{ github.ref_name }}.zip
+            dist/ProfLevelCost_${{ github.ref_name }}.zip

@@ -1,0 +1,7 @@
+## Interface: 20504
+## Title: ProfLevelCost - Data (BS)
+## Notes: Recipe pools for BS (LoadOnDemand)
+## RequiredDeps: ProfLevelCost
+## LoadOnDemand: 1
+
+BS_Pools.lua

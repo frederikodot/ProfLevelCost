@@ -22,12 +22,13 @@ ProfLevelCostDB = ProfLevelCostDB or {
   lastPlanName = nil,
   lastView = "summary",
   optimizeMode = "exp",
-  includeRepRecipes = true,      -- when false, exclude recipes that require reputation (per note)
-  includeDropRecipes = true,     -- include recipes with source="drop" (Drop/AH)
-  includeQuestRecipes = true,    -- include recipes with source="quest" (Quest)
-  includeVendorRecipes = true,   -- include recipes with source="vendor"/"faction" (Vendor)
+  includeRepRecipes = false,      -- when false, exclude recipes that require reputation (per note)
+  includeDropRecipes = false,     -- include recipes with source="drop" (Drop/AH)
+  includeQuestRecipes = false,    -- include recipes with source="quest" (Quest)
+  includeVendorRecipes = false,   -- include recipes with source="vendor"/"faction" (Vendor)
   showNCheapest = 2,             -- show up to N cheapest options (chosen + N-1 alternatives)
-  detailsMode = "full",          -- "full" or "compact"  expandCraftedReagents = true,
+  detailsMode = "full",          -- "full" or "compact"
+  expandCraftedReagents = true,
 
 }
 
@@ -37,6 +38,50 @@ local SKILLUP_PROB = {
   max = { yellow = 0.50, green = 0.10 },  -- Worst-ish
 }
 PLC.SKILLUP_PROB = SKILLUP_PROB
+
+-- =========================================================
+-- LoadOnDemand data addons (recipe pools)
+-- =========================================================
+PLC.DATA_ADDONS = PLC.DATA_ADDONS or {
+  AL = "ProfLevelCost_Data_AL",
+  BS = "ProfLevelCost_Data_BS",
+  EN = "ProfLevelCost_Data_EN",
+  JC = "ProfLevelCost_Data_JC",
+  LW = "ProfLevelCost_Data_LW",
+  TL = "ProfLevelCost_Data_TL",
+}
+
+-- AddOn API compatibility (Retail uses C_AddOns.*, Classic often has globals)
+local _IsAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
+local _LoadAddOn     = (C_AddOns and C_AddOns.LoadAddOn)     or LoadAddOn
+
+-- poolKeys may be: "BS_PRE" or { "BS_PRE", "BS_OUTLAND" } etc.
+function ProfLevelCost.EnsurePoolsLoaded(poolKeys)
+  if type(poolKeys) ~= "table" then return end
+
+  -- If we can't load addons programmatically, just return (or print a warning)
+  if type(_IsAddOnLoaded) ~= "function" or type(_LoadAddOn) ~= "function" then
+    -- print("|cffff3333ProfLevelCost|r: AddOn loading API unavailable in this client.")
+    return
+  end
+
+  for _, poolKey in ipairs(poolKeys) do
+    local prefix = type(poolKey) == "string" and poolKey:match("^([A-Z]+)_")
+    local addonName = prefix and ProfLevelCost.DATA_ADDONS and ProfLevelCost.DATA_ADDONS[prefix]
+    if addonName and not _IsAddOnLoaded(addonName) then
+      local ok, reason = _LoadAddOn(addonName)
+      if not ok then
+        print("|cffff3333ProfLevelCost|r: Failed to load "..addonName.." ("..tostring(reason)..")")
+      end
+
+      -- optional: invalidate any caches that depend on recipe pools
+      if ProfLevelCost.InvalidateCraftIndex then
+        ProfLevelCost.InvalidateCraftIndex()
+      end
+    end
+  end
+end
+
 
 -- =========================================================
 -- Shared helpers (exported on PLC so other files can use them)

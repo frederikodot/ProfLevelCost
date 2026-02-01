@@ -6,9 +6,6 @@
 
 ProfLevelCost_Init.lua
 ProfLevelCost_Core.lua
+ProfLevelCost_Plans.lua
 ProfLevelCost_UI.lua
 ProfLevelCost_Events.lua
-BS_Pools.lua
-JC_Pools.lua
-LW_Pools.lua
-EN_Pools.lua
