@@ -110,3 +110,36 @@ table.insert(ProfLevelCostPlans, {
 	chunk = 1,
 })
 
+table.insert(ProfLevelCostPlans, {
+	name = "Cooking Optimizer 1-300 - Pool Based",
+	poolKey = { "CO_PRE" },
+	from = 1,
+	to = 300,
+	chunk = 1,
+})
+
+table.insert(ProfLevelCostPlans, {
+	name = "Cooking Optimizer 300-375 - Pool Based",
+	poolKey = { "CO_PRE", "CO_OUT" }, 
+	from = 300,
+	to = 375,
+	chunk = 1,
+})
+
+table.insert(ProfLevelCostPlans, {
+	name = "Ecnhanting Optimizer 1-300 - Pool Based",
+	poolKey = { "EC_PRE" },
+	from = 1,
+	to = 300,
+	chunk = 1,
+})
+
+table.insert(ProfLevelCostPlans, {
+	name = "Enchanting Optimizer 300-375 - Pool Based",
+	poolKey = { "EC_PRE", "EC_OUT" }, 
+	from = 300,
+	to = 375,
+	chunk = 1,
+})
+
+

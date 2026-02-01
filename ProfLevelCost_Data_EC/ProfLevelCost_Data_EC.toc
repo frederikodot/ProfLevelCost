@@ -1,0 +1,7 @@
+## Interface: 20504
+## Title: ProfLevelCost - Data (EC)
+## Notes: Recipe pools for EC (LoadOnDemand)
+## RequiredDeps: ProfLevelCost
+## LoadOnDemand: 1
+
+EC_Pools.lua

@@ -1,0 +1,7 @@
+## Interface: 20504
+## Title: ProfLevelCost - Data (CO)
+## Notes: Recipe pools for CO (LoadOnDemand)
+## RequiredDeps: ProfLevelCost
+## LoadOnDemand: 1
+
+CO_Pools.lua

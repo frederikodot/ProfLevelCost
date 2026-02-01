@@ -49,6 +49,8 @@ PLC.DATA_ADDONS = PLC.DATA_ADDONS or {
   JC = "ProfLevelCost_Data_JC",
   LW = "ProfLevelCost_Data_LW",
   TL = "ProfLevelCost_Data_TL",
+  CO = "ProfLevelCost_Data_CO",
+  EC = "ProfLevelCost_Data_EC",
 }
 
 -- AddOn API compatibility (Retail uses C_AddOns.*, Classic often has globals)
