@@ -22,10 +22,10 @@ ProfLevelCostDB = ProfLevelCostDB or {
   lastPlanName = nil,
   lastView = "summary",
   optimizeMode = "exp",
-  includeRepRecipes = true,      -- when false, exclude recipes that require reputation (per note)
-  includeDropRecipes = true,     -- include recipes with source="drop" (Drop/AH)
-  includeQuestRecipes = true,    -- include recipes with source="quest" (Quest)
-  includeVendorRecipes = true,   -- include recipes with source="vendor"/"faction" (Vendor)
+  includeRepRecipes = false,      -- when false, exclude recipes that require reputation (per note)
+  includeDropRecipes = false,     -- include recipes with source="drop" (Drop/AH)
+  includeQuestRecipes = false,    -- include recipes with source="quest" (Quest)
+  includeVendorRecipes = false,   -- include recipes with source="vendor"/"faction" (Vendor)
   showNCheapest = 2,             -- show up to N cheapest options (chosen + N-1 alternatives)
   detailsMode = "full",          -- "full" or "compact"  expandCraftedReagents = true,
 
