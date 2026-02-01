@@ -2202,7 +2202,7 @@ ProfLevelCostRecipePools["BS_PRE"] = {
 	},
 }
 
-ProfLevelCostRecipePools["BS_OUTLAND"] = {
+ProfLevelCostRecipePools["BS_OUT"] = {
 	name = "Blacksmithing 300-375 (TBC)",
 	recipes = {
 		{
