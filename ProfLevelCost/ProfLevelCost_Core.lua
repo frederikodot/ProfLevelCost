@@ -183,6 +183,11 @@ end
 
 local _CraftIndexByItem = nil
 
+-- Allows LoadOnDemand data addons to reset the craft index when new pools are loaded.
+function PLC.InvalidateCraftIndex()
+  _CraftIndexByItem = nil
+end
+
 local function _EnsureCraftIndex()
   if _CraftIndexByItem then return end
   _CraftIndexByItem = {}
@@ -474,7 +479,7 @@ end
 --   "BS_PRE"
 --   {"BS_PRE", "BS_TBC", ...}
 local function getPoolRecipes(poolKey)
-  if not ProfLevelCostRecipePools or not poolKey then return {} end
+  if not poolKey then return {} end
 
   local keys = {}
   if type(poolKey) == "table" then
@@ -484,6 +489,14 @@ local function getPoolRecipes(poolKey)
   elseif type(poolKey) == "string" then
     keys[1] = poolKey
   end
+
+
+  if PLC and PLC.EnsurePoolsLoaded then
+    PLC.EnsurePoolsLoaded(keys)
+  end
+
+  -- Pools are defined by the data addons; if none are loaded (or load failed), return empty.
+  if not ProfLevelCostRecipePools then return {} end
 
   local out = {}
   local seen = {}

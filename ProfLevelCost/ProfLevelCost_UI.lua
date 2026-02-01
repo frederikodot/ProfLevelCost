@@ -66,6 +66,8 @@ end
 local function UI_SelectPlan(name)
   UI.selectedPlanName = name
   ProfLevelCostDB.lastPlanName = name
+  UI.cache = {} -- plan change invalidates cached outputs
+  UI.dirty = true
   if UI.planLabel then UI.planLabel:SetText(name or "(none)") end
 end
 
@@ -174,7 +176,57 @@ local function UI_UpdateOptimizeControl()
   end
 end
 
-local function UI_Recalculate()
+local function UI_CurrentSig(view)
+  local planName = UI.selectedPlanName or ProfLevelCostDB.lastPlanName or ""
+  local n = clampInt(ProfLevelCostDB.showNCheapest or 2, 1, 10, 2)
+  local mode = tostring(ProfLevelCostDB.optimizeMode or "exp")
+  local details = tostring(ProfLevelCostDB.detailsMode or (isCompact() and "compact" or "full"))
+  return table.concat({
+    view or "",
+    planName,
+    mode,
+    tostring(ProfLevelCostDB.includeRepRecipes == true),
+    tostring(ProfLevelCostDB.includeDropRecipes == true),
+    tostring(ProfLevelCostDB.includeQuestRecipes == true),
+    tostring(ProfLevelCostDB.includeVendorRecipes == true),
+    tostring(ProfLevelCostDB.expandCraftedReagents ~= false),
+    tostring(n),
+    details,
+  }, "|")
+end
+
+local function UI_Render()
+  local view = UI.view or ProfLevelCostDB.lastView or "summary"
+  local sig = UI_CurrentSig(view)
+  UI_UpdateOptimizeControl()
+
+  UI.cache = UI.cache or {}
+  local cached = UI.cache[view]
+  if cached and cached.text then
+    if cached.sig == sig then
+      UI_SetOutput(cached.text)
+      return
+    else
+      -- Show stale cached output, but clearly marked as out-of-date.
+      UI_SetOutput("|cffffaa00[OUT OF DATE]|r Click Calculate to refresh.\n\n" .. cached.text)
+      return
+    end
+  end
+
+  local plan = UI_GetSelectedPlan()
+  if not plan then
+    UI_SetOutput("Pick a plan, then click Calculate.")
+  else
+    UI_SetOutput("Ready. Click Calculate to compute results.")
+  end
+end
+
+local function UI_MarkDirty()
+  UI.dirty = true
+  -- We keep cached reports, but UI_Render will show them as OUT OF DATE if needed.
+end
+
+local function UI_Calculate()
   local plan = UI_GetSelectedPlan()
   if not plan then
     UI_SetOutput("Pick a plan first.")
@@ -186,8 +238,14 @@ local function UI_Recalculate()
 
   local view = UI.view or ProfLevelCostDB.lastView or "summary"
   local report = (view == "recipes") and buildRecipesReport(plan) or buildSummaryReport(plan)
+
+  UI.cache = UI.cache or {}
+  UI.cache[view] = { sig = UI_CurrentSig(view), text = report }
+  UI.dirty = false
+
   UI_SetOutput(report)
 end
+
 
 local function UI_Create()
   if UI.frame then return end
@@ -227,7 +285,7 @@ local function UI_Create()
   btnSummary:SetText("Summary")
   btnSummary:SetScript("OnClick", function()
     UI_SetView("summary")
-    UI_Recalculate()
+    UI_Render()
   end)
   UI.btnSummary = btnSummary
 
@@ -237,7 +295,7 @@ local function UI_Create()
   btnRecipes:SetText("Recipes")
   btnRecipes:SetScript("OnClick", function()
     UI_SetView("recipes")
-    UI_Recalculate()
+    UI_Render()
   end)
   UI.btnRecipes = btnRecipes
 
@@ -283,7 +341,8 @@ local function UI_Create()
   local function setShowN(n)
     ProfLevelCostDB.showNCheapest = clampInt(n, 1, 10, 2)
     UIDropDownMenu_SetText(nDD, tostring(ProfLevelCostDB.showNCheapest))
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end
 
   UIDropDownMenu_Initialize(nDD, function(_, level)
@@ -305,7 +364,8 @@ local function UI_Create()
   detailsBtn:SetScript("OnClick", function()
     ProfLevelCostDB.detailsMode = isCompact() and "full" or "compact"
     UI_UpdateOptimizeControl()
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end)
   UI.detailsBtn = detailsBtn
 
@@ -336,7 +396,8 @@ local function UI_Create()
   local function setMode(mode)
     ProfLevelCostDB.optimizeMode = mode
     UIDropDownMenu_SetText(optDD, modeLabel(mode))
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end
 
   UIDropDownMenu_Initialize(optDD, function(_, level)
@@ -355,7 +416,8 @@ local function UI_Create()
   filter:SetChecked(ProfLevelCostDB.includeRepRecipes == true)
   filter:SetScript("OnClick", function(self)
     ProfLevelCostDB.includeRepRecipes = self:GetChecked() and true or false
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end)
   UI.filterCheck = filter
 
@@ -371,7 +433,8 @@ local function UI_Create()
   drop:SetChecked(ProfLevelCostDB.includeDropRecipes == true)
   drop:SetScript("OnClick", function(self)
     ProfLevelCostDB.includeDropRecipes = self:GetChecked() and true or false
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end)
   UI.dropCheck = drop
 
@@ -387,7 +450,8 @@ local function UI_Create()
   quest:SetChecked(ProfLevelCostDB.includeQuestRecipes == true)
   quest:SetScript("OnClick", function(self)
     ProfLevelCostDB.includeQuestRecipes = self:GetChecked() and true or false
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end)
   UI.questCheck = quest
 
@@ -404,7 +468,8 @@ local function UI_Create()
   vendor:SetChecked(ProfLevelCostDB.includeVendorRecipes == true)
   vendor:SetScript("OnClick", function(self)
     ProfLevelCostDB.includeVendorRecipes = self:GetChecked() and true or false
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end)
   UI.vendorCheck = vendor
 
@@ -421,7 +486,8 @@ local function UI_Create()
   craftR:SetChecked(ProfLevelCostDB.expandCraftedReagents ~= false)
   craftR:SetScript("OnClick", function(self)
     ProfLevelCostDB.expandCraftedReagents = self:GetChecked() and true or false
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end)
   UI.craftReagentCheck = craftR
 
@@ -543,7 +609,8 @@ local function UI_Create()
   local function dropdownOnClick(selfArg)
     UI_SelectPlan(selfArg.value)
     UIDropDownMenu_SetText(dd, selfArg.value)
-    UI_Recalculate()
+    UI_MarkDirty()
+    UI_Render()
   end
 
   UIDropDownMenu_Initialize(dd, function(_, level)
@@ -560,7 +627,7 @@ local function UI_Create()
   calcBtn:SetSize(140, 24)
   calcBtn:SetPoint("TOPLEFT", dd, "BOTTOMLEFT", 2, -8)
   calcBtn:SetText("Calculate")
-  calcBtn:SetScript("OnClick", function() UI_Recalculate() end)
+  calcBtn:SetScript("OnClick", function() UI_Calculate() end)
 
   local refreshBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   refreshBtn:SetSize(140, 24)
@@ -602,7 +669,7 @@ local function UI_Toggle()
   else
     UI_UpdateStatus()
     UI.frame:Show()
-    UI_Recalculate()
+    UI_Render()
   end
 end
 
@@ -612,7 +679,10 @@ end
 -- UI exports (used by Events / Slash commands)
 -- =========================================================
 PLC.UI = UI
-PLC.UI_Recalculate = UI_Recalculate
+PLC.UI_Recalculate = UI_Calculate  -- backwards-compatible alias
+PLC.UI_Calculate = UI_Calculate
+PLC.UI_MarkDirty = UI_MarkDirty
+PLC.UI_Render = UI_Render
 PLC.UI_UpdateStatus = UI_UpdateStatus
 PLC.UI_Toggle = UI_Toggle
 PLC.UI_Create = UI_Create
